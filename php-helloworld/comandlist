@@ -1,0 +1,85 @@
+sudo podman run --name mysql -d -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e  MYSQL_ROOT_PASSWORD=r00tpa55 rhscl/mysql-57-rhel7
+
+sudo podman run --name persist-db -d -v /var/local/mysql:/var/lib/mysql/data -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e  MYSQL_ROOT_PASSWORD=r00tpa55 rhscl/mysql-57-rhel7
+
+
+sudo podman run --name mysqldb-port -d -v /var/local/mysql:/var/lib/mysql/data -p 13306:3306 -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e  MYSQL_ROOT_PASSWORD=r00tpa55 rhscl/mysql-57-rhel7
+
+mysql -uuser1 -h 127.0.0.1 -pmypa55 -P13306 items -e "SELECT * FROM Item"
+
+
+https://api.na45.prod.nextcle.com:6443
+
+vlqitm
+
+08584a45b6994df4b0f2
+
+https://github.com/fhreis/DO180-apps
+FROM ubi7/ubi:7.7
+
+MAINTAINER Fabricio Reis fabricioiodo@hotmail.com
+
+ENV PORT 8080
+
+LABEL description="A custom Apache container based on UBI7"
+
+RUN yum install -y httpd &&\
+    yum clean all
+
+RUN sed -ri -e "/^Listen 80/c\Listen ${PORT}" /etc/httpd/conf/httpd.conf && \
+    chown -R apache:apache /etc/httpd/logs/ && \
+    chown -R apache:apache /run/httpd/
+
+USER apache
+
+# Expose the custom port that you provided in the ENV var
+EXPOSE ${PORT}
+
+#Copy all files under src/ folder to Apache Document Root (/var/www/html)
+COPY  ./src/ /var/www/html
+
+#Start Apache in the foreground
+CMD ["httpd", "-D", "FOREGROUND"]
+
+
+
+oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+
+
+oc new-project ${RHT_OCP4_DEV_USER}-ocp
+
+oc new-app --as-deployment-config php:7.3~https://github.com/RedHatTraining/DO180-apps --context-dir temps --name temps
+
+oc new-project ${RHT_OCP4_DEV_USER}-mysql-openshift 	
+
+oc new-app --as-deployment-config --docker-image=registry.access.redhat.com/rhscl/mysql-57-rhel7:latest --name=mysql-openshift -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=testdb -e MYSQL_ROOT_PASSWORD=r00tpa55
+
+
+oc port-forward  mysql-openshift-1-m5vzv 3306:3306
+
+
+oc new-app mysql --as-deployment-config MYSQL_USER=user MYSQL_PASSWORD=pass MYSQL_DATABASE=testdb -l db=mysql
+
+oc new-app --docker-image=myregistry.com/mycompany/myapp --name=myapp --as-deployment-config
+
+oc new-app https://github.com/openshift/ruby-hello-world --name=ruby-hello --as-deployment-config
+
+oc new-app --as-deployment-config php:7.3~https://github.com/${RHT_OCP4_GITHUB_USER}/DO180-apps --context-dir php-helloworld --name php-helloworld
+
+curl php-helloworld-${RHT_OCP4_DEV_USER}-route.${RHT_OCP4_WILDCARD_DOMAIN}
+
+
+oc expose svc/php-helloworld --name=${RHT_OCP4_DEV_USER}-xyz
+
+curl ${RHT_OCP4_DEV_USER}-xyz-${RHT_OCP4_DEV_USER}-route.${RHT_OCP4_WILDCARD_DOMAIN}
+
+oc new-app --as-deployment-config php:7.3 --name php-helloworld https://github.com/${RHT_OCP4_GITHUB_USER}/DO180-apps#s2i --context-dir php-helloworld
+
+
+
+oc expose service php-helloworld --name ${RHT_OCP4_DEV_USER}-helloworld
+
+oc get route -o jsonpath='{..spec.host}{"\n"}'
+
+${RHT_OCP4_DEV_USER}-helloworld-${RHT_OCP4_DEV_USER}-s2i.${RHT_OCP4_WILDCARD_DOMAIN}
+
